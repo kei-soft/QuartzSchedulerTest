@@ -22,7 +22,7 @@ namespace QuartzSchedulerTest
             // Job 목록 생성
             List<JobInfo> jobList = new List<JobInfo>();
 
-            jobList.Add(new JobInfo() { Key = "1", CronExpression = "0/5 * * * * ?", StartTime = DateTime.Now, EndTime = DateTime.Now.AddSeconds(30) });
+            jobList.Add(new JobInfo() { Key = "1", CronExpression = "0 */5 * * * ?", StartTime = DateTime.Now.AddMinutes(-10), EndTime = DateTime.Now.AddMinutes(10) });
             jobList.Add(new JobInfo() { Key = "2", CronExpression = "0/10 * * * * ?", StartTime = DateTime.Now, EndTime = DateTime.Now.AddSeconds(30) });
             jobList.Add(new JobInfo() { Key = "3", CronExpression = "0/15 * * * * ?", StartTime = DateTime.Now, EndTime = DateTime.Now.AddSeconds(30) });
 
@@ -36,8 +36,10 @@ namespace QuartzSchedulerTest
                 // Job 주기 정의
                 ITrigger trigger = TriggerBuilder.Create()
                                     .WithIdentity($"{job.Key}_trigger")
-                                    .StartNow()
-                                    .WithCronSchedule(job.CronExpression)
+                                    .StartAt(job.StartTime)
+                                    .EndAt(job.EndTime)
+                                    .WithCronSchedule(job.CronExpression!, cronScheduleBuilder => cronScheduleBuilder.WithMisfireHandlingInstructionDoNothing()) // 즉시 실행 방지
+                                                                                                                                                                 //.WithCronSchedule(job.CronExpression!)
                                     .Build();
 
                 // Scheduler 에 Job 추가
